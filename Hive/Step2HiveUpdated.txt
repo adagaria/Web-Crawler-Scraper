@@ -1,0 +1,42 @@
+
+create external table step2table (postNumber int,word String)
+row format delimited
+fields terminated ','
+lines terminated by '\n'
+location 's3://projectcloudcosc/words';
+
+
+/*Ignore Spaces  and Get Term Frequency   for each word per Post  */
+
+select postNumber,LCASE(word) as words,count(LCASE(word)) as termfrequency from step2table 
+where trim(word) not like '' 
+group by postNumber,LCASE(word) 
+order by postNumber,termfrequency DESC;
+
+
+/*Writing the Term fREQUENCY Output to File */
+
+insert overwrite  directory 's3://outputprojectcosc/output/'
+select postNumber,LCASE(word) as words,count(LCASE(word)) as termfrequency from step2table 
+where trim(word) not like '' 
+group by postNumber,LCASE(word) 
+order by postNumber,termfrequency DESC;
+
+
+
+/*Ignore Spaces and Inverse Document Frequency For each word for all the posts per thread   */
+
+select LCASE(word) as words,count(LCASE(word)) as termfrequency from step2table 
+where trim(word) not like '' 
+group by LCASE(word) order by termfrequency DESC;
+ 
+/*Write the Inverse Document Frequency  to file */
+
+insert overwrite directory 's3://projectcloudcosc/newoutput' 
+select LCASE(word) as words,count(LCASE(word)) as termfrequency from step2table 
+where trim(word) not like '' 
+group by LCASE(word) order by termfrequency DESC;
+ 
+
+
+

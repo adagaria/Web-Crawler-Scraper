@@ -1,0 +1,28 @@
+
+
+create external table step1table (url String)
+row format delimited
+fields terminated by '\n'
+lines terminated by '\n'
+stored as textfile location 's3://projectcloudcosc/url';
+
+/* Added a column for Storing Authority or Hub */
+
+alter table step1table add columns(type string)
+
+
+*/To Select  rows and assign type column AS AUTHORITY OR HUB */
+
+
+select url, case when url rlike 'htm|html' then 'authority' else 'hub' end as type from step1table;
+
+
+/*Write Ouput to S3 */
+
+
+insert overwrite  directory 's3://outputprojectcosc/output/'
+select url, case when url rlike 'htm|html' then 'hub' else 'authority' end as type from step1table;
+
+
+
+
